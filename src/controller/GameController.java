@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -21,6 +22,7 @@ import utils.TimeThread;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class GameController {
     @FXML private GridPane playerGrid;
@@ -39,8 +41,8 @@ public class GameController {
     private TimeThread timerThread;
 
     @FXML
-    public void initialize(){
-        game = new Game("player");
+    public void initialize(String name){
+        game = new Game(name);
         createBoards();
         game.startNewGame();
 
@@ -217,21 +219,14 @@ public class GameController {
         ContextMenu pauseMenu = new ContextMenu();
 
         MenuItem resumeItem = new MenuItem("Reanudar");
-        MenuItem saveItem = new MenuItem("Guardar Partida");
         MenuItem menuItem = new MenuItem("Menu");
         MenuItem newGameItem = new MenuItem("Nuevo Juego");
         MenuItem exitItem = new MenuItem("Salir");
 
         resumeItem.setOnAction(e -> pauseMenu.hide());
 
-        saveItem.setOnAction(e -> {
-            boolean saved = SaveManager.saveGame(game);
-            updateStateLabel(saved ? "Partida guardada" : "Error al guardar la partida");
-            pauseMenu.hide();
-        });
-
         menuItem.setOnAction(e -> {
-            SaveManager.saveGame(game);
+            SaveManager.saveGame(game, "partida_"+game.getHumanPlayer().getName());
             try {
                 FXMLLoader loader = new FXMLLoader(GameController.class.getResource("../view/Menu.fxml"));
                 Parent menuRoot = loader.load();
@@ -246,16 +241,24 @@ public class GameController {
         });
 
         newGameItem.setOnAction(e -> {
-            initialize();
+            TextInputDialog dialog = new TextInputDialog("Jugador");
+            dialog.setTitle("Nuevo Juego");
+            dialog.setHeaderText("Ingrese su nombre:");
+            dialog.setContentText("Nombre: ");
+
+            Optional<String> result = dialog.showAndWait();
+            result.ifPresent(name -> {
+                initialize(name);
+            });
         });
 
         exitItem.setOnAction(e -> {
-            SaveManager.saveGame(game);
+            SaveManager.saveGame(game, "partida-"+game.getHumanPlayer().getName());
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.close();
         });
 
-        pauseMenu.getItems().addAll(resumeItem, saveItem, menuItem, newGameItem, exitItem);
+        pauseMenu.getItems().addAll(resumeItem, menuItem, newGameItem, exitItem);
         pauseMenu.show((Node) event.getSource(), Side.BOTTOM, 0, 0);
     }
 }

@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SaveManager {
@@ -22,27 +23,27 @@ public class SaveManager {
         return new File(SAVE_FILE).exists() && new File(INFO_FILE).exists();
     }
 
-    public static boolean saveGame(Game game) {
-        if (game == null) return false;
+    public static void saveGame(Game game, String saveName) {
+        if (game == null) return;
 
         try {
             Files.createDirectories(Path.of(SAVE_DIR));
 
+            String savePath = SAVE_DIR + File.separator + saveName + ".sav";
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(SAVE_FILE))) {
                 out.writeObject(game);
             }
 
-            writePlainInfo(game);
+            writePlainInfo(game, saveName);
 
-            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
-    public static Game loadGame() {
-        File file = new File(SAVE_FILE);
+    public static Game loadGame(String savedName) {
+        String path = SAVE_DIR + File.separator + savedName + ".sav";
+        File file = new File(path);
         if (!file.exists()) return null;
 
         try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
@@ -70,13 +71,15 @@ public class SaveManager {
         return sb.toString().trim();
     }
 
-    private static void writePlainInfo(Game game) throws IOException {
+    private static void writePlainInfo(Game game, String saveName) throws IOException {
         String playerName = game.getHumanPlayer().getName();
         int sunkHuman = countSunkShips(game.getHumanPlayer().getShips());
         int sunkMachine = countSunkShips(game.getMachinePlayer().getShips());
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
+        String infoPath = SAVE_DIR + File.separator + saveName +".txt";
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(INFO_FILE))) {
+            writer.write("saveName="+saveName);
             writer.write("jugador=" + playerName);
             writer.newLine();
             writer.write("barcosHundidosJugador=" + sunkHuman);
@@ -90,6 +93,20 @@ public class SaveManager {
             writer.write("guardadoEn=" + timestamp);
             writer.newLine();
         }
+    }
+
+    public static  List<String> getSavedGames(){
+        File dir = new File(SAVE_DIR);
+        List<String> saves = new ArrayList<>();
+        if(dir.exists()){
+            File[] files = dir.listFiles((d, name) -> name.endsWith(".sav"));
+            if(files != null){
+                for(File f : files){
+                    saves.add(f.getName());
+                }
+            }
+        }
+        return saves;
     }
 
     private static int countSunkShips(List<Ship> ships) {

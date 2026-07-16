@@ -1,5 +1,7 @@
 package model;
 
+import utils.SaveManager;
+
 import java.io.Serializable;
 
 public class Game implements Serializable {
@@ -35,6 +37,8 @@ public class Game implements Serializable {
             checkGameOver();
         }
 
+        SaveManager.saveGame(this, getHumanPlayer().getName());
+
         return result;
     }
 
@@ -46,6 +50,8 @@ public class Game implements Serializable {
 
         isHumanTurn = true;
         checkGameOver();
+
+        SaveManager.saveGame(this, "partida_"+getHumanPlayer().getName());
 
         return result;
     }
