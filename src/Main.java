@@ -12,7 +12,9 @@ public class Main extends Application {
             Parent root = loader.load();
 
             stage.setTitle("Batalla Naval");
-            stage.setScene(new Scene(root));
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(Main.class.getResource("view/styles.css").toExternalForm());
+            stage.setScene(scene);
             stage.show();
         }catch(Exception e){
             e.printStackTrace();

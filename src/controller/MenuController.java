@@ -9,11 +9,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
 import javafx.stage.Stage;
 import model.Game;
 import utils.SaveManager;
 
+import java.awt.*;
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 public class MenuController {
 
@@ -35,6 +39,7 @@ public class MenuController {
 
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene gameScene = new Scene(gameRoot);
+            gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
 
             currentStage.setTitle("Batalla Naval - Partida");
             currentStage.setScene(gameScene);
@@ -46,29 +51,58 @@ public class MenuController {
 
     @FXML
     private void handleContinueButton(ActionEvent event){
-        goToLoadedGame(event);
+        goToLoadedGame(event, "");
     }
 
     @FXML
-    private void handleLoadButton(ActionEvent event){
-        Alert info = new Alert(Alert.AlertType.CONFIRMATION);
-        info.setTitle("Cargar Partida");
-        info.setHeaderText("Datos de la partida guardada");
-        info.setContentText(SaveManager.readSummary());
+    private void handleLoadButton(ActionEvent event) {
+        List<String> savedGames = SaveManager.getSavedGames();
 
-        info.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                goToLoadedGame(event);
+        if (savedGames.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Sin partidas");
+            alert.setContentText("No hay partidas guardadas.");
+            alert.showAndWait();
+            return;
+        }
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(savedGames.get(0), savedGames);
+        dialog.setTitle("Cargar Partida");
+        dialog.setHeaderText("Selecciona una partida guardada");
+        dialog.setContentText("Partida:");
+
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(saveName -> {
+            Game loadedGame = SaveManager.loadGame(saveName);
+            if (loadedGame != null) {
+                try {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Game.fxml"));
+                    Parent gameRoot = loader.load();
+                    GameController controller = loader.getController();
+                    controller.resumeGame(loadedGame);
+
+                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                    stage.setScene(new Scene(gameRoot));
+                    stage.show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
 
-    private void goToLoadedGame(ActionEvent event){
-        Game savedGame = SaveManager.loadGame();
-        if (savedGame == null) return;
+    private void goToLoadedGame(ActionEvent event, String saveName) {
+        Game savedGame = SaveManager.loadGame(saveName);
+        if (savedGame == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setContentText("No se pudo cargar la partida.");
+            alert.showAndWait();
+            return;
+        }
 
         try {
-            FXMLLoader loader = new FXMLLoader(MenuController.class.getResource("../view/Game.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/Game.fxml"));
             Parent gameRoot = loader.load();
 
             GameController gameController = loader.getController();
@@ -77,10 +111,10 @@ public class MenuController {
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene gameScene = new Scene(gameRoot);
 
-            currentStage.setTitle("Batalla Naval - Partida");
+            currentStage.setTitle("Batalla Naval - Partida Cargada");
             currentStage.setScene(gameScene);
             currentStage.show();
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

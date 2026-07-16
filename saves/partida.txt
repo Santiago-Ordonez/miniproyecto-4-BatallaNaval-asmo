@@ -1,6 +1,6 @@
 jugador=player
-barcosHundidosJugador=0
-barcosHundidosMaquina=0
+barcosHundidosJugador=1
+barcosHundidosMaquina=2
 turnoHumano=true
 juegoTerminado=false
-guardadoEn=2026-07-16 11:35:02
+guardadoEn=2026-07-16 12:23:15
