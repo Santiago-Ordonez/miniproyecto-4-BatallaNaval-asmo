@@ -47,7 +47,7 @@ public class Game {
         return result;
     }
 
-    String getWinner(){
+    public String getWinner(){
         if(!gameOver) return null;
 
         return player.isDefeated() ? "machine" : "human";
@@ -57,4 +57,6 @@ public class Game {
         if(player.isDefeated()){gameOver = true;}
         else if(machine.isDefeated()){gameOver = true;}
     }
+
+    public boolean isGameOver(){return gameOver;}
 }

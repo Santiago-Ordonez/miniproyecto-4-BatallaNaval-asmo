@@ -50,6 +50,7 @@ public class Board implements IBoard{
     @Override
     public AttackResult attack(int row, int col, Ship ship){
         if(!isValidPosition(row, col)) return null;
+        if(matrix[row][col] > 1) return null;
 
         if(ship != null){
             ship.registerHit(row, col);
