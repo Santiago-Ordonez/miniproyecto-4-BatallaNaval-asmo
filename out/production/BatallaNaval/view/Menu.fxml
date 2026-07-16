@@ -20,8 +20,8 @@
                   <Insets top="20.0" />
                </VBox.margin>
             </Label>
-            <Button fx:id="continueButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Continuar" />
-            <Button fx:id="loadButon" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Cargar Partida" />
+            <Button fx:id="continueButton" onAction="#handleContinueButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Continuar" />
+            <Button fx:id="loadButon" onAction="#handleLoadButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Cargar Partida" />
             <Button onAction="#handleNewGameButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Nuevo Juego" />
             <Button onAction="#handleExitButton" mnemonicParsing="false" prefHeight="40.0" prefWidth="150.0" text="Salir" />
          </children>

@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Ship implements IShip{
+public class Ship implements IShip, Serializable {
+    private static final long serialVersionUID = 1L;
     private final int size;
     private Orientation orientation;
     private List<int[]> positions;

@@ -16,6 +16,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import model.*;
 import utils.MachineThread;
+import utils.SaveManager;
 import utils.TimeThread;
 
 import java.util.List;
@@ -61,6 +62,41 @@ public class GameController {
         timerThread.start();
 
         updateVisuals();
+    }
+
+    public void resumeGame(Game loadedGame) {
+        this.game = loadedGame;
+        createBoards();
+
+        isPlacementPhase = false;
+        currentShipIndex = game.getHumanPlayer().getShips().size();
+        currentOrientation = Orientation.HORIZONTAL;
+        showEnemyShips = false;
+
+        if (game.isGameOver()) {
+            updateStateLabel("Juego Terminado");
+        } else if (game.isHumanTurn()) {
+            updateStateLabel("Partida cargada. Tu turno");
+        } else {
+            updateStateLabel("Partida cargada. Turno de la máquina");
+        }
+
+        if (timerThread != null && timerThread.isAlive()) {
+            timerThread.interrupt();
+            try {
+                timerThread.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        timerThread = new TimeThread(timeLabel);
+        timerThread.start();
+
+        updateVisuals();
+
+        if (!game.isGameOver() && !game.isHumanTurn()) {
+            machineTurn();
+        }
     }
 
     private void createBoards() {
@@ -181,13 +217,21 @@ public class GameController {
         ContextMenu pauseMenu = new ContextMenu();
 
         MenuItem resumeItem = new MenuItem("Reanudar");
+        MenuItem saveItem = new MenuItem("Guardar Partida");
         MenuItem menuItem = new MenuItem("Menu");
         MenuItem newGameItem = new MenuItem("Nuevo Juego");
         MenuItem exitItem = new MenuItem("Salir");
 
         resumeItem.setOnAction(e -> pauseMenu.hide());
 
+        saveItem.setOnAction(e -> {
+            boolean saved = SaveManager.saveGame(game);
+            updateStateLabel(saved ? "Partida guardada" : "Error al guardar la partida");
+            pauseMenu.hide();
+        });
+
         menuItem.setOnAction(e -> {
+            SaveManager.saveGame(game);
             try {
                 FXMLLoader loader = new FXMLLoader(GameController.class.getResource("../view/Menu.fxml"));
                 Parent menuRoot = loader.load();
@@ -206,11 +250,12 @@ public class GameController {
         });
 
         exitItem.setOnAction(e -> {
+            SaveManager.saveGame(game);
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.close();
         });
 
-        pauseMenu.getItems().addAll(resumeItem, menuItem, newGameItem, exitItem);
+        pauseMenu.getItems().addAll(resumeItem, saveItem, menuItem, newGameItem, exitItem);
         pauseMenu.show((Node) event.getSource(), Side.BOTTOM, 0, 0);
     }
 }

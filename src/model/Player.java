@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player implements IPlayer{
+public class Player implements IPlayer, Serializable {
+    private static final long serialVersionUID = 1L;
     protected String name;
     protected Board board;
     protected List<Ship> ships;

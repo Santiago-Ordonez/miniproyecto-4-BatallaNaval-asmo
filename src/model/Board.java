@@ -1,9 +1,11 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Board implements IBoard{
+public class Board implements IBoard, Serializable {
+    private static final long serialVersionUID = 1L;
     private static final int SIZE = 10;
     private int[][] matrix;
     private List<Ship> ships;
