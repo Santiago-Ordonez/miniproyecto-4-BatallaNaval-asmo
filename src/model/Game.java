@@ -32,12 +32,10 @@ public class Game implements Serializable {
 
         AttackResult result = machine.receiveAttack(row, col);
 
-        if(result != null){
+        if(result == AttackResult.MISS){
             isHumanTurn = false;
-            checkGameOver();
         }
-
-        SaveManager.saveGame(this, getHumanPlayer().getName());
+        checkGameOver();
 
         return result;
     }
@@ -48,10 +46,10 @@ public class Game implements Serializable {
         int[] attackPos = machine.makeRandomAttack(player.getBoard());
         AttackResult result = player.receiveAttack(attackPos[0], attackPos[1]);
 
-        isHumanTurn = true;
+        if(result == AttackResult.MISS){
+            isHumanTurn = true;
+        }
         checkGameOver();
-
-        SaveManager.saveGame(this, "partida_"+getHumanPlayer().getName());
 
         return result;
     }

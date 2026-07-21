@@ -6,52 +6,66 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.ChoiceDialog;
 import javafx.stage.Stage;
 import model.Game;
 import utils.SaveManager;
 
-import java.awt.*;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public class MenuController {
 
     @FXML private Button continueButton;
-    @FXML private Button loadButon;
+    @FXML private Button loadButton;
 
     @FXML
     public void initialize() {
         boolean hasSave = SaveManager.hasSavedGame();
         continueButton.setDisable(!hasSave);
-        loadButon.setDisable(!hasSave);
+        loadButton.setDisable(!hasSave);
     }
 
     @FXML
     private void handleNewGameButton(ActionEvent event){
-        try {
-            FXMLLoader loader = new FXMLLoader(MenuController.class.getResource("../view/Game.fxml"));
-            Parent gameRoot = loader.load();
+        TextInputDialog dialog = new TextInputDialog("Jugador");
+        dialog.setTitle("Nuevo Juego");
+        dialog.setHeaderText("Ingresa tu nombre: ");
+        dialog.setContentText("Nombre: ");
 
-            Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            Scene gameScene = new Scene(gameRoot);
-            gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(MenuController.class.getResource("../view/Game.fxml"));
+                Parent gameRoot = loader.load();
 
-            currentStage.setTitle("Batalla Naval - Partida");
-            currentStage.setScene(gameScene);
-            currentStage.show();
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+                GameController controller = loader.getController();
+                controller.setPlayerName(name);
+                controller.newGame();
+
+                Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                Scene gameScene = new Scene(gameRoot);
+                gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
+
+                currentStage.setTitle("Batalla Naval - Partida");
+                currentStage.setScene(gameScene);
+                currentStage.show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showErrorAlert("Error al iniciar nuevo juego");
+            }
+        });
     }
 
     @FXML
     private void handleContinueButton(ActionEvent event){
-        goToLoadedGame(event, "");
+        Optional<String> recent = SaveManager.getMostRecentSave();
+        if(recent.isPresent()){
+            goToLoadedGame(event, recent.get());
+        }else{
+            showErrorAlert("No hay partidas guardadas para continuar");
+        }
     }
 
     @FXML
@@ -59,16 +73,13 @@ public class MenuController {
         List<String> savedGames = SaveManager.getSavedGames();
 
         if (savedGames.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Sin partidas");
-            alert.setContentText("No hay partidas guardadas.");
-            alert.showAndWait();
+            showErrorAlert("No hay partidas guardadas");
             return;
         }
 
         ChoiceDialog<String> dialog = new ChoiceDialog<>(savedGames.get(0), savedGames);
         dialog.setTitle("Cargar Partida");
-        dialog.setHeaderText("Selecciona una partida guardada");
+        dialog.setHeaderText("Selecciona una partida");
         dialog.setContentText("Partida:");
 
         Optional<String> result = dialog.showAndWait();
@@ -78,26 +89,29 @@ public class MenuController {
                 try {
                     FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Game.fxml"));
                     Parent gameRoot = loader.load();
+
                     GameController controller = loader.getController();
+                    controller.setSecondsPlayed(SaveManager.getSavedSeconds(saveName));
                     controller.resumeGame(loadedGame);
 
                     Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                    stage.setScene(new Scene(gameRoot));
+                    Scene gameScene = new Scene(gameRoot);
+                    gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
+
+                    stage.setScene(gameScene);
                     stage.show();
                 } catch (Exception e) {
                     e.printStackTrace();
+                    showErrorAlert("Error al cargar la partida");
                 }
-            }
+            }else{showErrorAlert("No se pudo cargar la partida");}
         });
     }
 
     private void goToLoadedGame(ActionEvent event, String saveName) {
         Game savedGame = SaveManager.loadGame(saveName);
         if (savedGame == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setContentText("No se pudo cargar la partida.");
-            alert.showAndWait();
+            showErrorAlert("No se encontró la partida");
             return;
         }
 
@@ -106,10 +120,12 @@ public class MenuController {
             Parent gameRoot = loader.load();
 
             GameController gameController = loader.getController();
+            gameController.setSecondsPlayed(SaveManager.getSavedSeconds(saveName));
             gameController.resumeGame(savedGame);
 
             Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             Scene gameScene = new Scene(gameRoot);
+            gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
 
             currentStage.setTitle("Batalla Naval - Partida Cargada");
             currentStage.setScene(gameScene);
@@ -123,5 +139,12 @@ public class MenuController {
     private void handleExitButton(ActionEvent event){
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
+    }
+
+    private void showErrorAlert(String message){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.GameController">
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.GameController">
    <children>
       <VBox layoutX="-3.0" layoutY="-5.0" prefHeight="600.0" prefWidth="900.0">
          <children>
@@ -34,7 +34,7 @@
                         <Insets left="170.0" />
                      </HBox.margin>
                   </Label>
-                  <Button onAction="#handleShowEnemyShipsButton" mnemonicParsing="false" text="Ver flota" />
+                  <Button mnemonicParsing="false" onAction="#handleShowEnemyShipsButton" text="Ver flota" />
                </children>
                <padding>
                   <Insets left="20.0" top="30.0" />
@@ -104,5 +104,22 @@
             </HBox>
          </children>
       </VBox>
+      <HBox layoutY="600.0" prefHeight="50.0" prefWidth="900.0" spacing="420.0">
+         <children>
+            <Label fx:id="playerShipsLabel" prefHeight="30.0" prefWidth="250.0" text="Barcos Restantes">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="machineShipsLabel" prefHeight="30.0" prefWidth="250.0" text="Barcos Restantes">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </children>
+         <padding>
+            <Insets left="50.0" right="50.0" />
+         </padding>
+      </HBox>
    </children>
 </Pane>

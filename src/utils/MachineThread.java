@@ -1,7 +1,6 @@
 package utils;
 
 import model.Game;
-import model.AttackResult;
 import javafx.application.Platform;
 
 public class MachineThread {
@@ -14,7 +13,7 @@ public class MachineThread {
             }
 
             Platform.runLater(() -> {
-                AttackResult result = game.machineAttack();
+                game.machineAttack();
                 onComplete.run();
             });
         }).start();

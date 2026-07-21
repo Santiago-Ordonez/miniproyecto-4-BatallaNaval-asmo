@@ -42,6 +42,9 @@ public class Player implements IPlayer, Serializable {
     @Override
     public List<Ship> getShips(){return new ArrayList<>(ships);}
 
+    @Override
+    public int getNoSunkShipsCount(){return 10 - getSunkShipsCount();}
+
     private int getSunkShipsCount(){
         int count = 0;
         for(Ship ship : ships){

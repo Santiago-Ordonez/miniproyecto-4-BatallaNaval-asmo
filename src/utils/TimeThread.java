@@ -4,10 +4,13 @@ import javafx.application.Platform;
 import javafx.scene.control.Label;
 
 public class TimeThread extends Thread{
-    private int seconds = 0;
+    private int seconds;
     private Label timeLabel;
 
-    public TimeThread(Label timeLabel){this.timeLabel = timeLabel;}
+    public TimeThread(Label timeLabel, int seconds){
+        this.timeLabel = timeLabel;
+        this.seconds = seconds;
+    }
 
     @Override
     public void run(){
@@ -28,4 +31,6 @@ public class TimeThread extends Thread{
             }
         }
     }
+
+    public int getSeconds(){return seconds;}
 }

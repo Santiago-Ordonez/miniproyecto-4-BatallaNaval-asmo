@@ -11,6 +11,7 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -29,20 +30,30 @@ public class GameController {
     @FXML private GridPane enemyGrid;
     @FXML private Label stateLabel;
     @FXML private Label timeLabel;
+    @FXML private Label playerShipsLabel;
+    @FXML private Label machineShipsLabel;
 
     private Game game;
     private List<Pane> playerCells = new ArrayList<>();
     private List<Pane> enemyCells = new ArrayList<>();
 
     private boolean isPlacementPhase;
-    private int currentShipIndex = 0;
+    private int currentShipIndex;
     private Orientation currentOrientation;
     private boolean showEnemyShips;
     private TimeThread timerThread;
+    private String playerName;
+    private int secondsPlayed;
 
     @FXML
-    public void initialize(String name){
-        game = new Game(name);
+    public void initialize(){}
+
+    public void newGame(){
+        game = new Game(playerName);
+        setupNewGame();
+    }
+
+    private void setupNewGame(){
         createBoards();
         game.startNewGame();
 
@@ -50,8 +61,12 @@ public class GameController {
         currentShipIndex = 0;
         currentOrientation = Orientation.HORIZONTAL;
         showEnemyShips = false;
-        updateStateLabel("fase de colocación de barcos");
 
+        startTimer();
+        updateVisuals();
+    }
+
+    private void startTimer(){
         if(timerThread != null && timerThread.isAlive()){
             timerThread.interrupt();
             try{
@@ -60,45 +75,33 @@ public class GameController {
                 Thread.currentThread().interrupt();
             }
         }
-        timerThread = new TimeThread(timeLabel);
+        timerThread = new TimeThread(timeLabel, secondsPlayed);
         timerThread.start();
-
-        updateVisuals();
     }
 
     public void resumeGame(Game loadedGame) {
         this.game = loadedGame;
+        setupLoadedGame();
+    }
+
+    private void setupLoadedGame(){
         createBoards();
 
         isPlacementPhase = false;
-        currentShipIndex = game.getHumanPlayer().getShips().size();
-        currentOrientation = Orientation.HORIZONTAL;
         showEnemyShips = false;
 
-        if (game.isGameOver()) {
-            updateStateLabel("Juego Terminado");
-        } else if (game.isHumanTurn()) {
-            updateStateLabel("Partida cargada. Tu turno");
-        } else {
-            updateStateLabel("Partida cargada. Turno de la máquina");
+        if(game.isGameOver()){
+            updateStateLabel("Juego Terminado - Ganador: " + game.getWinner());
+        }else if (game.isHumanTurn()){
+            updateStateLabel("Partida Cargada - Tu turno");
+        }else{
+            updateStateLabel("Partida cargada - Turno de la máquina");
         }
 
-        if (timerThread != null && timerThread.isAlive()) {
-            timerThread.interrupt();
-            try {
-                timerThread.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        timerThread = new TimeThread(timeLabel);
-        timerThread.start();
-
+        startTimer();
         updateVisuals();
 
-        if (!game.isGameOver() && !game.isHumanTurn()) {
-            machineTurn();
-        }
+        if(!game.isGameOver() && !game.isHumanTurn()) machineTurn();
     }
 
     private void createBoards() {
@@ -119,6 +122,11 @@ public class GameController {
                 final int r = row;
                 final int c = col;
 
+                if(isPlayer){
+                    cell.setOnMouseMoved(e -> showPreview(r, c));
+                    cell.setOnMouseExited(e -> clearPreview());
+                }
+
                 cell.setOnMouseClicked(e -> handleCellClick(e, r, c, isPlayer));
 
                 grid.add(cell, col, row);
@@ -128,27 +136,34 @@ public class GameController {
     }
 
     private void handleCellClick(MouseEvent e, int row, int col, boolean isPlayerBoard) {
-        System.out.println("Click en: "+row+", "+col+") - playerBoard: "+isPlayerBoard+" - placement phase " + isPlacementPhase);
-
         if (isPlacementPhase && isPlayerBoard) {
-            placeCurrentShip(row, col);
+            if(e.getButton() == MouseButton.SECONDARY){
+                rotateCurrentShip();
+            }else {
+                placeCurrentShip(row, col);
+            }
         } else if (!isPlacementPhase && !isPlayerBoard) {
-            System.out.println("Intentando disparo enemigo...");
             AttackResult result = game.humanAttack(row, col);
-            System.out.println("Resultado de disparo: "+result);
-            updateVisuals();
             if (result != null) {
+                saveGame();
                 updateStateLabel("Disparo: " + result);
                 if (!game.isHumanTurn()) {
                     machineTurn();
                 }
+                if(game.isGameOver()){
+                    updateStateLabel("Juego Terminado - Ganador " + game.getWinner());
+                }
             }
         }
+        updateVisuals();
+    }
+
+    private void rotateCurrentShip(){
+        currentOrientation = (currentOrientation == Orientation.HORIZONTAL) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
     }
 
     private void placeCurrentShip(int row, int col) {
-        boolean placed = ((HumanPlayer) game.getHumanPlayer())
-                .placeShip(currentShipIndex, row, col, currentOrientation);
+        boolean placed = game.getHumanPlayer().placeShip(currentShipIndex, row, col, currentOrientation);
 
         if (placed) {
             currentShipIndex++;
@@ -169,15 +184,36 @@ public class GameController {
         MachineThread.executeMachineTurn(game, () -> {
             updateVisuals();
             updateStateLabel("Máquina atacó");
+
             if(game.isGameOver()){
-                updateStateLabel("Juego Terminado");
+                updateStateLabel("Juego Terminado - Ganador " + game.getWinner());
+                return;
             }
+
+            if(!game.isHumanTurn()) machineTurn();
         });
+        saveGame();
     }
 
     private void updateVisuals() {
         updateGridVisual(playerCells, game.getHumanPlayer().getBoard(), true);
         updateGridVisual(enemyCells, game.getMachinePlayer().getBoard(), false);
+        if(isPlacementPhase) updateStateLabel("Posiciona tu " + getShipType());
+        playerShipsLabel.setText("Barcos Restantes " + game.getHumanPlayer().getNoSunkShipsCount());
+        machineShipsLabel.setText("Barcos Restantes " + game.getMachinePlayer().getNoSunkShipsCount());
+    }
+
+    private String getShipType(){
+        if(currentShipIndex == 10) return "fragata";
+
+        int size = game.getHumanPlayer().getShips().get(currentShipIndex).getSize();
+        return switch(size){
+            case 1 -> "fragata";
+            case 2 -> "destructor";
+            case 3 -> "submarino";
+            case 4 -> "portaaviones";
+            default -> "barco";
+        };
     }
 
     private void updateGridVisual(List<Pane> cells, Board board, boolean isHumanBoard) {
@@ -204,8 +240,43 @@ public class GameController {
         }
     }
 
+    private void showPreview(int row, int col){
+        clearPreview();
+        if(!isPlacementPhase) return;
+
+        Ship tempShip = new Ship(game.getHumanPlayer().getShips().get(currentShipIndex).getSize());
+        tempShip.setPosition(row, col, currentOrientation);
+        for(int[] pos : tempShip.getPositions()){
+            if(pos[0] >= 0 && pos[0] < 10 && pos[1] >= 0 && pos[1] < 10){
+                int index = pos[0] * 10 + pos[1];
+                if(index < playerCells.size()){
+                    playerCells.get(index).setStyle("-fx-border-color: black; -fx-background-color: rgba(0, 255, 0, 0.3)");
+                }
+            }
+        }
+    }
+
+    private void clearPreview(){
+        for(Pane cell : playerCells){
+            cell.setStyle("-fx-border-color: black; -fx-background-color: lightblue;");
+        }
+        updateVisuals();
+    }
+
     private void updateStateLabel(String text) {
         stateLabel.setText(text);
+    }
+
+    public void setPlayerName(String name){this.playerName = name;}
+
+    public void setSecondsPlayed(int secondsPlayed){
+        this.secondsPlayed = secondsPlayed;
+    }
+
+    private void saveGame(){
+        if(!isPlacementPhase){
+            SaveManager.saveGame(game, timerThread.getSeconds());
+        }
     }
 
     @FXML
@@ -226,12 +297,13 @@ public class GameController {
         resumeItem.setOnAction(e -> pauseMenu.hide());
 
         menuItem.setOnAction(e -> {
-            SaveManager.saveGame(game, "partida_"+game.getHumanPlayer().getName());
+            saveGame();
             try {
                 FXMLLoader loader = new FXMLLoader(GameController.class.getResource("../view/Menu.fxml"));
                 Parent menuRoot = loader.load();
 
                 Scene menuScene = new Scene(menuRoot);
+                menuScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
 
                 Stage currentStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 currentStage.setTitle("Batalla Naval");
@@ -241,6 +313,7 @@ public class GameController {
         });
 
         newGameItem.setOnAction(e -> {
+            saveGame();
             TextInputDialog dialog = new TextInputDialog("Jugador");
             dialog.setTitle("Nuevo Juego");
             dialog.setHeaderText("Ingrese su nombre:");
@@ -248,12 +321,13 @@ public class GameController {
 
             Optional<String> result = dialog.showAndWait();
             result.ifPresent(name -> {
-                initialize(name);
+                playerName = name;
+                newGame();
             });
         });
 
         exitItem.setOnAction(e -> {
-            SaveManager.saveGame(game, "partida-"+game.getHumanPlayer().getName());
+            saveGame();
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.close();
         });
