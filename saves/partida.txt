@@ -1,6 +1,0 @@
-jugador=player
-barcosHundidosJugador=1
-barcosHundidosMaquina=2
-turnoHumano=true
-juegoTerminado=false
-guardadoEn=2026-07-16 12:23:15

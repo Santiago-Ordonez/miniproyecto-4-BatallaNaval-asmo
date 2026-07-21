@@ -1,0 +1,8 @@
+saveName=Jugador
+jugador=Jugador
+barcosHundidosJugador=0
+barcosHundidosMaquina=0
+segundosJugados=39
+turnoHumano=true
+juegoTerminadofalse
+guardadoEn=2026-07-21 18:48:59

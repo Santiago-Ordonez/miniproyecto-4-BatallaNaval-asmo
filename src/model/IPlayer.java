@@ -9,4 +9,5 @@ public interface IPlayer {
     boolean isDefeated();
     boolean placeShips();
     AttackResult receiveAttack(int row, int col);
+    int getNoSunkShipsCount();
 }
