@@ -1,0 +1,8 @@
+saveName=alan
+jugador=alan
+barcosHundidosJugador=0
+barcosHundidosMaquina=1
+segundosJugados=19
+turnoHumano=false
+juegoTerminadofalse
+guardadoEn=2026-07-23 08:51:05

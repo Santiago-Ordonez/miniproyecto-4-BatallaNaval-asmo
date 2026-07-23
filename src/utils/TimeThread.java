@@ -1,17 +1,29 @@
 package utils;
 
+/**
+ * Thread responsible for managing the game timer.
+ * Updates a Label with the elapsed time in MM:SS format.
+ */
 import javafx.application.Platform;
 import javafx.scene.control.Label;
 
 public class TimeThread extends Thread{
     private int seconds;
     private Label timeLabel;
-
+    
+    /**
+     * Creates a new timer thread.
+     * @param timeLabel Label to update with time
+     * @param initialSeconds starting seconds (for loaded games)
+     */
     public TimeThread(Label timeLabel, int seconds){
         this.timeLabel = timeLabel;
         this.seconds = seconds;
     }
-
+    
+    /**
+     * Main thread loop that increments time every second.
+     */   
     @Override
     public void run(){
         System.out.println("Timer thread started...");
@@ -31,6 +43,10 @@ public class TimeThread extends Thread{
             }
         }
     }
-
+    
+    /**
+     * Returns the current elapsed seconds.
+     * @return seconds played
+     */
     public int getSeconds(){return seconds;}
 }

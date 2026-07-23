@@ -12,11 +12,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Manages saving and loading of games using serialization and text files.
+ */
 public class SaveManager {
     private static final String SAVE_DIR = "saves";
 
     private SaveManager(){}
 
+    /**
+     * Checks if there is at least one saved game.
+     * @return true if saved games exist
+     */
     public static boolean hasSavedGame(){
         File dir = new File(SAVE_DIR);
 
@@ -26,6 +33,12 @@ public class SaveManager {
         return files != null && files.length > 0;
     }
 
+    /**
+     * Saves the complete game state.
+     * @param game game to save
+     * @param secondsPlayed elapsed seconds
+     * @return true if saved successfully
+     */
     public static void saveGame(Game game, int secondsPlayed){
         if(game==null) return;
 
@@ -45,6 +58,11 @@ public class SaveManager {
         }
     }
 
+    /**
+     * Loads a game by name.
+     * @param saveName name of the save
+     * @return loaded Game or null
+     */
     public static Game loadGame(String saveName){
         if(saveName == null || saveName.trim().isEmpty()){
             saveName = "last_game";
@@ -63,6 +81,10 @@ public class SaveManager {
         }
     }
 
+    /**
+     * Returns a list of all available save names.
+     * @return list of save names
+     */
     public static List<String> getSavedGames(){
         File dir = new File(SAVE_DIR);
         List<String> saves = new ArrayList<>();
@@ -116,6 +138,10 @@ public class SaveManager {
         return count;
     }
 
+    /**
+     * Gets the most recent save based on file modification time.
+     * @return Optional containing the most recent save name
+     */
     public static Optional<String> getMostRecentSave(){
         File dir = new File(SAVE_DIR);
         if(!dir.exists()) return Optional.empty();
@@ -140,6 +166,11 @@ public class SaveManager {
         return Optional.empty();
     }
 
+    /**
+     * Gets the saved seconds for a game.
+     * @param saveName name of the save
+     * @return saved seconds or 0
+     */
     public static int getSavedSeconds(String saveName){
         if(saveName == null || saveName.trim().isEmpty()) return 0;
 

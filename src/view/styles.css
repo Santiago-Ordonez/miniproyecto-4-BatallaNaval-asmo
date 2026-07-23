@@ -10,6 +10,11 @@ Label {
     -fx-font-weight: bold;
 }
 
+.title {
+    -fx-font-size: 38px;
+    -fx-font-weight: bold;
+}
+
 Button {
     -fx-background-color: #1e3a5f;
     -fx-text-fill: #ffffff;

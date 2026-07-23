@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox alignment="CENTER" prefHeight="400" prefWidth="500" spacing="20" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.GameOverController">
+
+    <padding>
+        <Insets bottom="50" left="20" right="20" top="50" />
+    </padding>
+
+    <Label fx:id="resultLabel" styleClass="title" style="-fx-font-size: 38px; -fx-font-weight: bold;" textAlignment="CENTER" />
+    <Label fx:id="statsLabel" style="-fx-font-size: 18px;" />
+
+    <Button onAction="#handleNewGame" prefWidth="200" text="Jugar de Nuevo" />
+    <Button onAction="#handleBackToMenu" prefWidth="200" text="Volver al Menú" />
+    <Button onAction="#handleExit" prefWidth="200" text="Salir" />
+</VBox>

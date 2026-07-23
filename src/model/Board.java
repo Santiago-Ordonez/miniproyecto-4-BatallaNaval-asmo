@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents the 10x10 game board.
+ * Handles ship placement and attack registration.
+ */
 public class Board implements IBoard, Serializable {
     private static final long serialVersionUID = 1L;
     private static final int SIZE = 10;
@@ -15,6 +19,10 @@ public class Board implements IBoard, Serializable {
         ships = new ArrayList<>();
     }
 
+    /**
+     * Returns a copy of the board matrix.
+     * @return 10x10 matrix copy
+     */
     @Override
     public int[][] getMatrix(){
         int[][] copy = new int[SIZE][SIZE];
@@ -24,6 +32,11 @@ public class Board implements IBoard, Serializable {
         return copy;
     }
 
+    /**
+     * Places a ship on the board if possible.
+     * @param ship ship to place
+     * @return true if placed successfully
+     */
     @Override
     public boolean placeShip(Ship ship){
         if(ship == null || !canPlaceShip(ship)) return false;
@@ -49,6 +62,13 @@ public class Board implements IBoard, Serializable {
         return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
     }
 
+    /**
+     * Performs an attack on a position.
+     * @param row row
+     * @param col column
+     * @param ship affected ship (null for miss)
+     * @return attack result
+     */
     @Override
     public AttackResult attack(int row, int col, Ship ship){
         if(!isValidPosition(row, col)) return null;

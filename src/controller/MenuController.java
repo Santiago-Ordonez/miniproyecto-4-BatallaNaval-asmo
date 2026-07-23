@@ -85,24 +85,30 @@ public class MenuController {
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(saveName -> {
             Game loadedGame = SaveManager.loadGame(saveName);
+
             if (loadedGame != null) {
-                try {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Game.fxml"));
-                    Parent gameRoot = loader.load();
+                if(loadedGame.isGameOver()){
+                    showGameOverScreen(event, loadedGame);
+                }else {
+                    try {
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/Game.fxml"));
+                        Parent gameRoot = loader.load();
 
-                    GameController controller = loader.getController();
-                    controller.setSecondsPlayed(SaveManager.getSavedSeconds(saveName));
-                    controller.resumeGame(loadedGame);
+                        GameController controller = loader.getController();
 
-                    Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                    Scene gameScene = new Scene(gameRoot);
-                    gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
+                        controller.setSecondsPlayed(SaveManager.getSavedSeconds(saveName));
+                        controller.resumeGame(loadedGame);
 
-                    stage.setScene(gameScene);
-                    stage.show();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    showErrorAlert("Error al cargar la partida");
+                        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+                        Scene gameScene = new Scene(gameRoot);
+                        gameScene.getStylesheets().add(MenuController.class.getResource("../view/styles.css").toExternalForm());
+
+                        stage.setScene(gameScene);
+                        stage.show();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        showErrorAlert("Error al cargar la partida");
+                    }
                 }
             }else{showErrorAlert("No se pudo cargar la partida");}
         });
@@ -112,6 +118,11 @@ public class MenuController {
         Game savedGame = SaveManager.loadGame(saveName);
         if (savedGame == null) {
             showErrorAlert("No se encontró la partida");
+            return;
+        }
+
+        if(savedGame.isGameOver()){
+            showGameOverScreen(event, savedGame);
             return;
         }
 
@@ -146,5 +157,24 @@ public class MenuController {
         alert.setTitle("Error");
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void showGameOverScreen(ActionEvent event, Game game) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/GameOver.fxml"));
+            Parent root = loader.load();
+
+            GameOverController controller = loader.getController();
+            controller.setGame(game);
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add("/view/styles.css");
+            stage.setScene(scene);
+            stage.setTitle("Game Over - Batalla Naval");
+            stage.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
