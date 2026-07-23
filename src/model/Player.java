@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Base class for players (human and machine).
+ */
 public class Player implements IPlayer, Serializable {
     private static final long serialVersionUID = 1L;
     protected String name;
@@ -45,7 +48,7 @@ public class Player implements IPlayer, Serializable {
     @Override
     public int getNoSunkShipsCount(){return 10 - getSunkShipsCount();}
 
-    private int getSunkShipsCount(){
+    public int getSunkShipsCount(){
         int count = 0;
         for(Ship ship : ships){
             if(ship.isSunk()) count++;
@@ -53,6 +56,10 @@ public class Player implements IPlayer, Serializable {
         return count;
     }
 
+    /**
+     * Checks if the player has been defeated.
+     * @return true if all ships are sunk
+     */
     @Override
     public boolean isDefeated(){return getSunkShipsCount() == ships.size();}
 
@@ -61,6 +68,12 @@ public class Player implements IPlayer, Serializable {
         return false;
     }
 
+    /**
+     * Receives an attack on the specified position.
+     * @param row row
+     * @param col column
+     * @return attack result
+     */
     @Override
     public AttackResult receiveAttack(int row, int col){
         Ship hitShip = null;

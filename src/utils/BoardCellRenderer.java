@@ -6,10 +6,24 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import model.Orientation;
 
+/**
+ * Utility class responsible for rendering board cells with images and effects.
+ * Handles ship visualization, hits, misses and sunk states.
+ */
 public class BoardCellRenderer {
 
     private static final String IMAGE_PATH = "../resources/ship_";
-
+    
+    /**
+     * Updates a single board cell with the appropriate image and visual effects.
+     * 
+     * @param cell the Pane representing the cell
+     * @param value cell state (0=empty, 1=ship, 2=miss, 3=hit, 4=sunk)
+     * @param showShip whether the ship should be visible
+     * @param part segment index of the ship (0 to size-1)
+     * @param shipType type/size of the ship
+     * @param orientation ship orientation (HORIZONTAL or VERTICAL)
+     */
     public static void updateCell(Pane cell, int value, boolean showShip, int part, int shipType, Orientation orientation) {
         if(cell.getChildren().isEmpty()){
             System.out.println("Error al obtener cell.children");
@@ -57,7 +71,12 @@ public class BoardCellRenderer {
             applyHitEffect(iv);
         }
     }
-
+    
+    /**
+     * Loads an image from resources.
+     * @param filename image filename
+     * @return loaded Image or null if not found
+     */
     private static Image loadImage(String filename) {
         try {
             java.io.InputStream is = BoardCellRenderer.class.getResourceAsStream(filename);
@@ -71,7 +90,11 @@ public class BoardCellRenderer {
             return null;
         }
     }
-
+    
+    /**
+     * Applies visual effect for a hit.
+     * @param iv ImageView to modify
+     */
     private static void applyHitEffect(ImageView iv) {
         ColorAdjust adjust = new ColorAdjust();
         adjust.setHue(0.1);
@@ -79,7 +102,11 @@ public class BoardCellRenderer {
         adjust.setSaturation(0.8);
         iv.setEffect(adjust);
     }
-
+    
+    /**
+     * Applies visual effect for a sunk ship.
+     * @param iv ImageView to modify
+     */
     private static void applySunkEffect(ImageView iv) {
         ColorAdjust adjust = new ColorAdjust();
         adjust.setBrightness(-0.5);

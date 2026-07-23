@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a single ship in the game.
+ * Tracks its position, orientation, hits and status.
+ */
 public class Ship implements IShip, Serializable {
     private static final long serialVersionUID = 1L;
     private final int size;
@@ -11,6 +15,13 @@ public class Ship implements IShip, Serializable {
     private List<int[]> positions;
     private List<int[]> hits;
 
+    /**
+     * Creates a new ship.
+     * @param size ship size (1-4)
+     * @param orientation HORIZONTAL or VERTICAL
+     * @param startRow starting row
+     * @param startCol starting column
+     */
     public Ship(int size, Orientation orientation, int startRow, int startCol){
         this.size = size;
         this.orientation = orientation;
@@ -49,6 +60,11 @@ public class Ship implements IShip, Serializable {
         return false;
     }
 
+    /**
+     * Registers a hit on the ship.
+     * @param row hit row
+     * @param col hit column
+     */
     @Override
     public void registerHit(int row, int col){
         if(contains(row, col) && !isHitAt(row, col)) hits.add(new int[]{row, col});
@@ -61,6 +77,10 @@ public class Ship implements IShip, Serializable {
         return false;
     }
 
+    /**
+     * Checks if the ship is completely sunk.
+     * @return true if all parts are hit
+     */
     @Override
     public boolean isSunk(){
         return hits.size() == size;

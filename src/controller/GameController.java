@@ -50,6 +50,9 @@ public class GameController {
     @FXML
     public void initialize(){}
 
+    /**
+     * Initializes a new game with the player name.
+     */
     public void newGame(){
         game = new Game(playerName);
         setupNewGame();
@@ -81,6 +84,10 @@ public class GameController {
         timerThread.start();
     }
 
+    /**
+     * Loads a saved game.
+     * @param loadedGame the loaded game instance
+     */
     public void resumeGame(Game loadedGame) {
         this.game = loadedGame;
         setupLoadedGame();
@@ -92,9 +99,15 @@ public class GameController {
         isPlacementPhase = false;
         showEnemyShips = false;
 
+        System.out.println("Game over: " + game.isGameOver());
+
         if(game.isGameOver()){
-            updateStateLabel("Juego Terminado - Ganador: " + game.getWinner());
-        }else if (game.isHumanTurn()){
+            System.out.println("If cumplido");
+            showGameOverScreen();
+            return;
+        }
+
+        if (game.isHumanTurn()){
             updateStateLabel("Partida Cargada - Tu turno");
         }else{
             updateStateLabel("Partida cargada - Turno de la máquina");
@@ -143,6 +156,9 @@ public class GameController {
         }
     }
 
+    /**
+     * Handles mouse clicks on the board cells.
+     */
     private void handleCellClick(MouseEvent e, int row, int col, boolean isPlayerBoard) {
         if (isPlacementPhase && isPlayerBoard) {
             if(e.getButton() == MouseButton.SECONDARY){
@@ -159,7 +175,7 @@ public class GameController {
                     machineTurn();
                 }
                 if(game.isGameOver()){
-                    updateStateLabel("Juego Terminado - Ganador " + game.getWinner());
+                    showGameOverScreen();
                 }
             }
         }
@@ -194,7 +210,7 @@ public class GameController {
             updateStateLabel("Máquina atacó");
 
             if(game.isGameOver()){
-                updateStateLabel("Juego Terminado - Ganador " + game.getWinner());
+                showGameOverScreen();
                 return;
             }
 
@@ -203,6 +219,9 @@ public class GameController {
         saveGame();
     }
 
+    /**
+     * Updates all visual elements of the board.
+     */
     private void updateVisuals() {
         updateGridVisual(playerCells, game.getHumanPlayer().getBoard(), true);
         updateGridVisual(enemyCells, game.getMachinePlayer().getBoard(), false);
@@ -277,6 +296,10 @@ public class GameController {
         stateLabel.setText(text);
     }
 
+    /**
+     * Initializes a new game with the given player name.
+     * @param name player's name
+     */
     public void setPlayerName(String name){this.playerName = name;}
 
     public void setSecondsPlayed(int secondsPlayed){
@@ -293,6 +316,38 @@ public class GameController {
     public void handleShowEnemyShipsButton(){
         showEnemyShips = !showEnemyShips;
         updateVisuals();
+    }
+
+    /**
+     * Displays the Game Over screen.
+     */
+    private void showGameOverScreen() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/GameOver.fxml"));
+            Parent root = loader.load();
+            GameOverController controller = loader.getController();
+            controller.setGame(game);
+
+            Stage stage = getCurrentStage();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add("/view/styles.css");
+            stage.setScene(scene);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Stage getCurrentStage() {
+        if (stateLabel != null && stateLabel.getScene() != null) {
+            return (Stage) stateLabel.getScene().getWindow();
+        }
+        if (timeLabel != null && timeLabel.getScene() != null) {
+            return (Stage) timeLabel.getScene().getWindow();
+        }
+
+        System.out.println("state y time null");
+
+        return (Stage) playerGrid.getScene().getWindow();
     }
 
     @FXML
