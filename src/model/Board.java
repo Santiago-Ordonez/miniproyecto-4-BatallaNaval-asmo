@@ -96,4 +96,33 @@ public class Board implements IBoard, Serializable {
 
         return valid;
     }
+
+    public Ship getShipAt(int row, int col) {
+        for (Ship ship : ships) {
+            if (ship.contains(row, col)) return ship;
+        }
+        return null;
+    }
+
+    public int getShipPartAt(int row, int col) {
+        Ship ship = getShipAt(row, col);
+        if (ship == null) return -1;
+        List<int[]> positions = ship.getPositions();
+        for (int i = 0; i < positions.size(); i++) {
+            if (positions.get(i)[0] == row && positions.get(i)[1] == col) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getShipTypeAt(int row, int col) {
+        Ship ship = getShipAt(row, col);
+        return ship != null ? ship.getSize() : 0;
+    }
+
+    public Orientation getShipOrientationAt(int row, int col) {
+        Ship ship = getShipAt(row, col);
+        return ship != null ? ship.getOrientation() : Orientation.HORIZONTAL;
+    }
 }
