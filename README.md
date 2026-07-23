@@ -61,3 +61,6 @@ Santiago Ordóñez
 ## License
 
 This project was developed as part of an academic mini-project.
+
+## Project Video
+https://youtu.be/vAud4G1w3dk?si=DMLoLWbH_HcHceqS
