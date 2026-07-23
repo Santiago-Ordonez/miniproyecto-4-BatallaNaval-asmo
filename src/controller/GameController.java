@@ -11,12 +11,14 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextInputDialog;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import model.*;
+import utils.BoardCellRenderer;
 import utils.MachineThread;
 import utils.SaveManager;
 import utils.TimeThread;
@@ -117,7 +119,13 @@ public class GameController {
             for (int col = 0; col < 10; col++) {
                 Pane cell = new Pane();
                 cell.setPrefSize(40, 40);
-                cell.setStyle("-fx-border-color: black; -fx-background-color: lightblue;");
+                cell.setStyle("-fx-border-color: black;");
+
+                ImageView imageView = new ImageView();
+                imageView.setFitWidth(40);
+                imageView.setFitHeight(40);
+                imageView.setPreserveRatio(true);
+                cell.getChildren().add(imageView);
 
                 final int r = row;
                 final int c = col;
@@ -225,17 +233,19 @@ public class GameController {
                 Pane cell = cells.get(index++);
                 int value = matrix[row][col];
 
-                if(!isHumanBoard && !showEnemyShips && value==1){
-                    cell.setStyle("-fx-border-color: black; -fx-background-color: lightblue;");
-                }else {
-                    switch (value) {
-                        case 0 -> cell.setStyle("-fx-border-color: black; -fx-background-color: lightblue;");
-                        case 1 -> cell.setStyle("-fx-border-color: black; -fx-background-color: gray;");
-                        case 2 -> cell.setStyle("-fx-border-color: black; -fx-background-color: lightgray;");
-                        case 3 -> cell.setStyle("-fx-border-color: black; -fx-background-color: orange;");
-                        case 4 -> cell.setStyle("-fx-border-color: black; -fx-background-color: red;");
-                    }
+                boolean showShip = false;
+
+                if(isHumanBoard){
+                    showShip = true;
+                }else if(showEnemyShips){
+                    showShip = true;
                 }
+
+                int part = board.getShipPartAt(row, col);
+                int shipType = board.getShipTypeAt(row, col);
+                Orientation orientation = board.getShipOrientationAt(row, col);
+
+                BoardCellRenderer.updateCell(cell, value, showShip, part, shipType, orientation);
             }
         }
     }
